@@ -1,0 +1,5 @@
+1. Make a shell - that had a loop: whoosh 
+2. Design it to include built in commands
+3. Design it to include path command
+4. Conditional programming to include error messages
+5. Check and document it
