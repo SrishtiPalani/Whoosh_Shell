@@ -1,5 +1,31 @@
-1. Make a shell - that had a loop: whoosh 
-2. Design it to include built in commands
-3. Design it to include path command
-4. Conditional programming to include error messages
-5. Check and document it
+1. Make a shell - that had a loop: whoosh
+	a. Print prompt and wait for input
+	b. Repeatedly (infinite loop)
+
+2. Add exit command
+	-> the user types exit into the prompt and the shell should call exit(0)
+
+3. Design it to include pwd command
+	-> the user types pwd and the shell calls getcwd() and displays result
+
+4. Implement cd command
+	a. cd without arguments changes to $HOME
+	b. cd with arguments
+		i. a directory name
+		ii. the .. argument
+
+5. Executing external programs
+	a. Identify if a program called exists in the /bin directory
+		i. print if it exists or if it does not
+	b. Call an external program that has no arguments
+	c. Call an external program that has arguments
+
+6. Implement path command
+	-> parse arguments and set the path correctly 
+	-> (we could use an array for the stored path?)
+
+7. Defensive programming to include error messages
+	a. design edge cases
+	b. test them and add error handling
+
+6. Check and document it
