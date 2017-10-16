@@ -16,6 +16,52 @@ int parseCommand(char* command){
 	return 1;
 }
 
+int pwd(char **command) {
+	
+	if(strcmp(command[0], "pwd") == 0) {
+		
+		char *cwd;
+		char buff[PATH_MAX + 1];
+	
+		cwd = getcwd(buff, PATH_MAX + 1);
+		if(cwd != NULL) {
+			printf("%s\n", cwd);
+		}
+		else {
+			error_msg();
+		}
+		return 0;
+	}
+	
+	return 1;
+}
+
+int cd(char **command, int num_args) {
+	
+	if(strcmp(command[0], "cd") == 0) {
+		
+		char *dir;
+		
+		if(num_args == 1) {
+			dir = getenv("HOME");
+			
+			if(chdir(dir) != 0) {
+				error_msg();
+			}			
+		}
+		else {
+			dir = command[1];
+			
+			if(chdir(dir) != 0) {
+				error_msg();
+			}
+		}
+		return 0;
+	}
+	
+	return 1;
+}
+
 int main(int argc, char** argv){
 	//whoosh is inherently a loop
 	
