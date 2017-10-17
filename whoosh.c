@@ -1,6 +1,12 @@
 #include <stdio.h>
-#include <string.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <stdlib.h>
+#include <string.h>
+#include <limits.h>
+#include <fcntl.h>
 
 
 int running = 1;
@@ -8,17 +14,13 @@ int running = 1;
 //parseCommand takes in a command and passes it to the correct handler function.
 //returns 0 if the command is valid
 //returns 1 if the command is unknown
-int parseCommand(char* command){
+int parseCommand(char *command){
 	if (strcmp (command, "exit\n") == 0){
 		running = 0;
 		return 0;
 	}
-	return 1;
-}
-
-int pwd(char **command) {
 	
-	if(strcmp(command[0], "pwd") == 0) {
+    else if(strcmp(command[0], "pwd\n") == 0) {
 		
 		char *cwd;
 		char buff[PATH_MAX + 1];
@@ -28,39 +30,25 @@ int pwd(char **command) {
 			printf("%s\n", cwd);
 		}
 		else {
-			error_msg();
+			printf("Error pwd didn't work"); 
+			//error_msg();
 		}
 		return 0;
 	}
-	
-	return 1;
-}
-
-int cd(char **command, int num_args) {
-	
-	if(strcmp(command[0], "cd") == 0) {
-		
-		char *dir;
-		
-		if(num_args == 1) {
-			dir = getenv("HOME");
-			
-			if(chdir(dir) != 0) {
-				error_msg();
-			}			
-		}
-		else {
+	else {
 			dir = command[1];
 			
 			if(chdir(dir) != 0) {
-				error_msg();
+				printf("Error cd didn't work"); 
+				//error_msg();
 			}
 		}
 		return 0;
 	}
-	
+
 	return 1;
 }
+
 
 int main(int argc, char** argv){
 	//whoosh is inherently a loop
@@ -75,7 +63,7 @@ int main(int argc, char** argv){
 		fgets(currCommand, MAX_COMMAND_LEN, stdin);
 
 		//do we need to do something if they enter a command that is too long?
-		int executionCode = parseCommand(currCommand);
+		int executionCode = parseCommand(currCommand, );
 		if ( executionCode == 1){
 			printf("whoosh: command not found\n");
 		}
