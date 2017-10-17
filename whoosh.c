@@ -43,10 +43,9 @@ int parseCommand(char *command){
 	else if (strncmp (command, "path ", 5) == 0 || strncmp (command, "path\n", 5) == 0 ){
 		setPath(command+5);
 		printArray(path, pathLength);
-		return 0;
-	}
 	return 1;
 }
+
 
 int main(int argc, char** argv){
 	//whoosh is inherently a loop
