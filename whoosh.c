@@ -40,7 +40,6 @@ int parseCommand(char *command){
 		running = 0;
 		return 0;
 	}
-<<<<<<< HEAD
 	else if (strncmp (command, "path ", 5) == 0 || strncmp (command, "path\n", 5) == 0 ){
 		setPath(command+5);
 		printArray(path, pathLength);
@@ -48,42 +47,6 @@ int parseCommand(char *command){
 	}
 	return 1;
 }
-
-
-
-int pwd(char **command) {
-=======
->>>>>>> origin/master
-	
-    else if(strcmp(command[0], "pwd\n") == 0) {
-		
-		char *cwd;
-		char buff[PATH_MAX + 1];
-	
-		cwd = getcwd(buff, PATH_MAX + 1);
-		if(cwd != NULL) {
-			printf("%s\n", cwd);
-		}
-		else {
-			printf("Error pwd didn't work"); 
-			//error_msg();
-		}
-		return 0;
-	}
-	else {
-			dir = command[1];
-			
-			if(chdir(dir) != 0) {
-				printf("Error cd didn't work"); 
-				//error_msg();
-			}
-		}
-		return 0;
-	}
-
-	return 1;
-}*/
-
 
 int main(int argc, char** argv){
 	//whoosh is inherently a loop
