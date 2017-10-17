@@ -8,11 +8,35 @@
 #include <limits.h>
 #include <fcntl.h>
 
+
 int running = 1;
 
 void reportError() {
 	char error_message[30] = "An error has occurred\n";
 	write(STDERR_FILENO, error_message, strlen(error_message));
+
+char** path;
+int pathLength;
+
+int running = 1;
+
+
+void printArray(char** arr, int arrLength){
+	printf("printing Array\n");
+	for (int i = 0; i < arrLength; i++){
+		printf("%s\n", arr[i]);
+	}
+}
+
+//takes in a path (stripped of "path ") and puts each entry into the path variable
+void setPath(char* pathCommand){
+	char* token = strtok(pathCommand, " ");
+	for (int i = 0; token != NULL; i++){
+		path[i] = token;
+		token = strtok(NULL, " ");
+		pathLength = i + 1;
+	}
+	path[pathLength-1][strlen(path[pathLength-1])-1] = '\0';
 }
 
 //parseCommand takes in a command and passes it to the correct handler function.
@@ -23,7 +47,6 @@ int parseCommand(char *command){
 		running = 0;
 		return 0;
 	}
-   
    else if(strcmp(command,"pwd\n") == 0) {
 		char *cwd;
 		char buff[PATH_MAX + 1];
@@ -38,6 +61,12 @@ int parseCommand(char *command){
 		}
 		return 0;
 	}
+   
+   else if (strncmp (command, "path ", 5) == 0 || strncmp (command, "path\n", 5) == 0 ){
+		setPath(command+5);
+		printArray(path, pathLength);
+   }
+
 	return 1;
 }
 
@@ -48,6 +77,7 @@ int main(int argc, char** argv){
 	
 	//How long should this be?
 	int const MAX_COMMAND_LEN = 128;
+	path = (char**) malloc(sizeof(char) * MAX_COMMAND_LEN);
 
 	while (running){
 		printf("whoosh> ");
