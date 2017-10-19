@@ -33,37 +33,6 @@ void setPath(char* pathCommand){
 	}
 	path[pathLength-1][strlen(path[pathLength-1])-1] = '\0';
 }
-
-//parseCommand takes in a command and passes it to the correct handler function.
-//it's for the 1 parameter commands such as exit, path and pwd
-//returns 0 if the command is valid
-//returns 1 if the command is unknown
-int parseCommand(char *command){
-	if (strcmp(command, "exit\n") == 0){
-		running = 0;
-		return 0;
-	}
-   else if(strcmp(command,"pwd\n") == 0) {
-		char *cwd;
-		char buff[PATH_MAX + 1];
-		cwd = getcwd(buff, PATH_MAX + 1);
-		if(cwd != NULL) {
-			printf("You're here: %s\n", cwd);
-		}
-		else {
-			reportError();
-		}
-		return 0;
-	}
-   else if (strncmp (command, "path ", 5) == 0 || strncmp (command, "path\n", 5) == 0 ){
-		setPath(command+5);
-		printArray(path, pathLength);
-		return 0; 
-   }
-
-	return 1;
-}
-
 int count_args(char *command) {
 	int num_args = 0;
 	int length = strlen(command);
@@ -80,13 +49,36 @@ int count_args(char *command) {
 			num_args++;
 		}
 	}
-	printf("The num_args is:%d \n", num_args);
+	//printf("The num_args is:%d \n", num_args);
 	return num_args;
 }
-
-int cd(char *command, int num_args) {
-	
-	if(strcmp(&command[0], "cd\n") == 0 || strcmp(&command[0], "cd ") == 0) {
+//parseCommand takes in a command and passes it to the correct handler function.
+//it's for the 1 parameter commands such as exit, path and pwd
+//returns 0 if the command is valid
+//returns 1 if the command is unknown
+int parseCommand(char *command, int num_args){
+	if (strcmp(command, "exit") == 0){
+		running = 0;
+		return 0;
+	}
+   else if(strcmp(command,"pwd") == 0) {
+		char *cwd;
+		char buff[PATH_MAX + 1];
+		cwd = getcwd(buff, PATH_MAX + 1);
+		if(cwd != NULL) {
+			printf("You're here: %s\n", cwd);
+		}
+		else {
+			reportError();
+		}
+		return 0;
+	}
+   else if (strncmp (command, "path ", 5) == 0 || strncmp (command, "path", 5) == 0 ){
+		setPath(command+5);
+		printArray(path, pathLength);
+		return 0; 
+   }
+   else if(strncmp(command, "cd", 3) == 0 || strncmp(command, "cd ", 3) == 0) {
 		char *dir;
 		if(num_args == 1) {
 			dir = getenv("HOME");
@@ -96,18 +88,20 @@ int cd(char *command, int num_args) {
 			}			
 		}
 		else{
-			dir = &command[1];
+			
+			dir = command + 3;
+			//printf("dir is %s\n", dir); 
 			if(chdir(dir) != 0) {
-				printf("chdir(dir) is %d\n", chdir(dir));
+				printf("is more than 1 chdir(dir) %d\n", chdir(dir));
 				reportError();
-				
 			}
 		}
 		return 0;
 	}
-	
+
 	return 1;
 }
+
 
 
 int main(int argc, char** argv){
@@ -129,26 +123,28 @@ int main(int argc, char** argv){
 		
 		//what is the difference between fgets and scanf?
 		fgets(currCommand, MAX_COMMAND_LEN, stdin);
-		
-
+		// printf("The currCommand is before:%s \n", currCommand);
 		int lineLen = strlen(currCommand);
-		
+			if(lineLen > 0){
+				if (currCommand[lineLen - 1] == '\n')
+	        		currCommand[lineLen - 1] = '\0';
+			}
+
 		if(lineLen > MAX_COMMAND_LEN) {
 			reportError();
 			continue;
 		}
 		else{
-			printf("The currCommand is:%s \n", currCommand);
+			//printf("The currCommand is after:%s \n", currCommand);
 		}
 		
 		//do we need to do something if they enter a command that is too long?
-		int executionCode = parseCommand(currCommand);
-		int cdexecCode = cd(currCommand, count_args(currCommand));
-		printf("cdexecCode is: %d\n", cdexecCode); 
+		int executionCode = parseCommand(currCommand, count_args(currCommand));
+		
 	
-		if (executionCode == 1 && cdexecCode == 1 ){
+		if (executionCode == 1){
 			printf("whoosh: command not found\n");
-			printf("cdexecCode is: %d\n", cdexecCode); 
+			//printf("executionCode is: %d\n", executionCode); 
 		}
 		
 
