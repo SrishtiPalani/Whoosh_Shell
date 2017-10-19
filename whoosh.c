@@ -10,21 +10,13 @@ int running = 1;
 char** path;
 int pathLength;
 
-<<<<<<< HEAD
 char** path;
 int pathLength;
 
-=======
->>>>>>> cd
 void reportError() {
 	char error_message[30] = "An error has occurred\n";
 	write(STDERR_FILENO, error_message, strlen(error_message));
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> cd
-
 void printArray(char** arr, int arrLength){
 	printf("printing Array\n");
 	for (int i = 0; i < arrLength; i++){
