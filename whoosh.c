@@ -10,6 +10,7 @@
 
 
 int running = 1;
+int const MAX_COMMAND_LEN = 128;
 
 char** path;
 int pathLength;
@@ -38,12 +39,14 @@ void setPath(char* pathCommand){
 	printArray(path, pathLength);
 }
 
-int findExternal(char* command){
-	return 0;
+char* findExternal(char* command){
+	return "/bin/ls";
 }
 
 int executeExternal(char* command){
-	if (findExternal(command) != 0){
+	char* location = findExternal(command);
+
+	if (location == NULL){
 		return 1;
 	}
 	
@@ -51,16 +54,23 @@ int executeExternal(char* command){
 
 	if (pid < 0) {
 		return 2;
-	} 
-
-	else if (pid > 0) { // I am the parent
+	} else if (pid > 0) { // I am the parent
 		int status;
 		wait(&status);
-	}
-  
-  	else { // I am the child
-		char* argv[2] = {"ls", 0};
-		execve ("/bin/ls", argv, 0);
+	} else { // I am the child
+		char** argv = (char**) malloc(sizeof(char) * MAX_COMMAND_LEN);
+		
+		int numArgs = 0;
+		char* token = strtok(command, " ");
+		for (int i = 0; token != NULL; i++){
+			argv[i] = token;
+			token = strtok(NULL, " ");
+			numArgs++;
+		}
+
+		argv[numArgs-1][strlen(argv[numArgs-1])-1] = '\0';
+
+		execve (location, argv, 0);
   	}
 
   	return 0;
@@ -104,10 +114,6 @@ int parseCommand(char *command){
 
 
 int main(int argc, char** argv){
-	//whoosh is inherently a loop
-	
-	//How long should this be?
-	int const MAX_COMMAND_LEN = 128;
 	path = (char**) malloc(sizeof(char) * MAX_COMMAND_LEN);
 	path[0] = "/bin";
 	pathLength = 1;
