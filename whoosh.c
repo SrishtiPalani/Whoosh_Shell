@@ -39,13 +39,38 @@ void setPath(char* pathCommand){
 	printArray(path, pathLength);
 }
 
-char* findExternal(char* command){
-	return "/bin/ls";
+char* findExternal(char* commandKey){
+	char* location = NULL;
+	struct stat fileStat;
+
+	for (int i = 0; i < pathLength; i++){
+		char* testPath = path[i] + 1;
+		testPath = strcat(testPath, strcat("/", commandKey));
+		if(stat(testPath, &fileStat) < 0){
+			location = strcat("/", testPath);
+			break;
+		}
+	}
+
+	return location;
 }
 
 int executeExternal(char* command){
-	char* location = findExternal(command);
+	char** argv = (char**) malloc(sizeof(char) * MAX_COMMAND_LEN);
+		
+	int numArgs = 0;
+	char* token = strtok(command, " ");
+	for (int i = 0; token != NULL; i++){
+		argv[i] = token;
+		token = strtok(NULL, " ");
+		numArgs++;
+	}
 
+	argv[numArgs-1][strlen(argv[numArgs-1])-1] = '\0';
+
+	char* location = findExternal(argv[0]);
+
+	printf("Location is %s.\n",location );
 	if (location == NULL){
 		return 1;
 	}
@@ -58,18 +83,6 @@ int executeExternal(char* command){
 		int status;
 		wait(&status);
 	} else { // I am the child
-		char** argv = (char**) malloc(sizeof(char) * MAX_COMMAND_LEN);
-		
-		int numArgs = 0;
-		char* token = strtok(command, " ");
-		for (int i = 0; token != NULL; i++){
-			argv[i] = token;
-			token = strtok(NULL, " ");
-			numArgs++;
-		}
-
-		argv[numArgs-1][strlen(argv[numArgs-1])-1] = '\0';
-
 		execve (location, argv, 0);
   	}
 
