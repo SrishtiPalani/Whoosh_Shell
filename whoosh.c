@@ -1,8 +1,5 @@
 #include <stdio.h>
 #include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
@@ -10,15 +7,13 @@
 
 
 int running = 1;
+char** path;
+int pathLength;
 
 void reportError() {
 	char error_message[30] = "An error has occurred\n";
 	write(STDERR_FILENO, error_message, strlen(error_message));
-
-char** path;
-int pathLength;
-
-int running = 1;
+}
 
 
 void printArray(char** arr, int arrLength){
@@ -40,6 +35,7 @@ void setPath(char* pathCommand){
 }
 
 //parseCommand takes in a command and passes it to the correct handler function.
+//it's for the 1 parameter commands such as exit, path and pwd
 //returns 0 if the command is valid
 //returns 1 if the command is unknown
 int parseCommand(char *command){
@@ -50,46 +46,112 @@ int parseCommand(char *command){
    else if(strcmp(command,"pwd\n") == 0) {
 		char *cwd;
 		char buff[PATH_MAX + 1];
-	
 		cwd = getcwd(buff, PATH_MAX + 1);
-
 		if(cwd != NULL) {
-			printf("%s\n", cwd);
+			printf("You're here: %s\n", cwd);
 		}
 		else {
 			reportError();
 		}
 		return 0;
 	}
-   
    else if (strncmp (command, "path ", 5) == 0 || strncmp (command, "path\n", 5) == 0 ){
 		setPath(command+5);
 		printArray(path, pathLength);
+		return 0; 
    }
 
 	return 1;
 }
 
+int count_args(char *command) {
+	int num_args = 0;
+	int length = strlen(command);
+	char *str = command;
+	int state = 0;
+	int i;
+	
+	for(i=0; i<length; i++) {
+		if (str[i] == ' ' || str[i] == '\n') {
+			state = 0;
+		}
+		else if (state == 0) {
+			state = 1;
+			num_args++;
+		}
+	}
+	printf("The num_args is:%d \n", num_args);
+	return num_args;
+}
+
+int cd(char *command, int num_args) {
+	
+	if(strcmp(&command[0], "cd\n") == 0 || strcmp(&command[0], "cd ") == 0) {
+		char *dir;
+		if(num_args == 1) {
+			dir = getenv("HOME");
+			if(chdir(dir) != 0){
+				reportError();
+				printf("chdir(dir) is %d\n", chdir(dir));
+			}			
+		}
+		else{
+			dir = &command[1];
+			if(chdir(dir) != 0) {
+				printf("chdir(dir) is %d\n", chdir(dir));
+				reportError();
+				
+			}
+		}
+		return 0;
+	}
+	
+	return 1;
+}
 
 
 int main(int argc, char** argv){
 	//whoosh is inherently a loop
-	
 	//How long should this be?
 	int const MAX_COMMAND_LEN = 128;
 	path = (char**) malloc(sizeof(char) * MAX_COMMAND_LEN);
 
+	//Checks that only ./whoosh is entered to invoke shell
+	if(argc != 1) {
+		printf("Error argc !=1. argc is: %d\n", argc);
+		reportError();
+		exit(1);
+	}
+
 	while (running){
 		printf("whoosh> ");
 		char currCommand[MAX_COMMAND_LEN+1];
+		
 		//what is the difference between fgets and scanf?
 		fgets(currCommand, MAX_COMMAND_LEN, stdin);
+		
 
+		int lineLen = strlen(currCommand);
+		
+		if(lineLen > MAX_COMMAND_LEN) {
+			reportError();
+			continue;
+		}
+		else{
+			printf("The currCommand is:%s \n", currCommand);
+		}
+		
 		//do we need to do something if they enter a command that is too long?
 		int executionCode = parseCommand(currCommand);
-		if ( executionCode == 1){
+		int cdexecCode = cd(currCommand, count_args(currCommand));
+		printf("cdexecCode is: %d\n", cdexecCode); 
+	
+		if (executionCode == 1 && cdexecCode == 1 ){
 			printf("whoosh: command not found\n");
+			printf("cdexecCode is: %d\n", cdexecCode); 
 		}
+		
+
 	}
 	exit(0);
 }
