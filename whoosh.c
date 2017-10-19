@@ -11,15 +11,13 @@
 
 int running = 1;
 
-void reportError() {
-	char error_message[30] = "An error has occurred\n";
-	write(STDERR_FILENO, error_message, strlen(error_message));
-
 char** path;
 int pathLength;
 
-int running = 1;
-
+void reportError() {
+	char error_message[30] = "An error has occurred\n";
+	write(STDERR_FILENO, error_message, strlen(error_message));
+}
 
 void printArray(char** arr, int arrLength){
 	printf("printing Array\n");
