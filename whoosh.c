@@ -4,6 +4,7 @@
 #include <string.h>
 #include <limits.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 
 
 int running = 1;
@@ -112,11 +113,11 @@ int count_args(char *command) {
 //returns 0 if the command is valid
 //returns 1 if the command is unknown
 int parseCommand(char *command, int num_args){
-	if (strcmp(command, "exit") == 0){
+	if (strcmp(command, "exit\n") == 0){
 		running = 0;
 		return 0;
 	}
-   else if(strcmp(command,"pwd") == 0) {
+   else if(strcmp(command,"pwd\n") == 0) {
 		char *cwd;
 		char buff[PATH_MAX + 1];
 		cwd = getcwd(buff, PATH_MAX + 1);
@@ -128,11 +129,11 @@ int parseCommand(char *command, int num_args){
 		}
 		return 0;
 	}
-   else if (strncmp (command, "path ", 5) == 0 || strncmp (command, "path", 5) == 0 ){
+   else if (strncmp (command, "path ", 5) == 0 || strncmp (command, "path\n", 5) == 0 ){
 		setPath(command+5);
 		return 0;
    }
-   else if(strncmp(command, "cd", 3) == 0 || strncmp(command, "cd ", 3) == 0) {
+   else if(strncmp(command, "cd\n", 3) == 0 || strncmp(command, "cd ", 3) == 0) {
 		char *dir;
 		if(num_args == 1) {
 			dir = getenv("HOME");
@@ -144,7 +145,12 @@ int parseCommand(char *command, int num_args){
 		else{
 			
 			dir = command + 3;
-			//printf("dir is %s\n", dir); 
+			//printf("dir is %s\n", dir);
+			int lineLen = strlen(command);
+			if(lineLen > 0){
+				if (command[lineLen - 1] == '\n')
+	        		command[lineLen - 1] = '\0';
+			}
 			if(chdir(dir) != 0) {
 				printf("is more than 1 chdir(dir) %d\n", chdir(dir));
 				reportError();
@@ -182,25 +188,25 @@ int main(int argc, char** argv){
 		//what is the difference between fgets and scanf?
 		fgets(currCommand, MAX_COMMAND_LEN, stdin);
 		// printf("The currCommand is before:%s \n", currCommand);
-		int lineLen = strlen(currCommand);
-			if(lineLen > 0){
-				if (currCommand[lineLen - 1] == '\n')
-	        		currCommand[lineLen - 1] = '\0';
-			}
+		// int lineLen = strlen(currCommand);
+		// 	if(lineLen > 0){
+		// 		if (currCommand[lineLen - 1] == '\n')
+	 //        		currCommand[lineLen - 1] = '\0';
+		// 	}
 
-		if(lineLen > MAX_COMMAND_LEN) {
-			reportError();
-			continue;
-		}
-		else{
-			//printf("The currCommand is after:%s \n", currCommand);
-		}
+		// if(lineLen > MAX_COMMAND_LEN) {
+		// 	reportError();
+		// 	continue;
+		// }
+		// else{
+		// 	//printf("The currCommand is after:%s \n", currCommand);
+		// }
 		
 		//do we need to do something if they enter a command that is too long?
 		int executionCode = parseCommand(currCommand, count_args(currCommand));
 		
 	
-		if (executionCode != 1){
+		if (executionCode != 0){
 			printf("whoosh: command not found\n");
 			reportError();
 			//printf("executionCode is: %d\n", executionCode); 
