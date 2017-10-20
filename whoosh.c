@@ -10,6 +10,7 @@
 
 
 int running = 1;
+int const MAX_COMMAND_LEN = 128;
 
 char** path;
 int pathLength;
@@ -35,6 +36,62 @@ void setPath(char* pathCommand){
 		pathLength = i + 1;
 	}
 	path[pathLength-1][strlen(path[pathLength-1])-1] = '\0';
+	printArray(path, pathLength);
+}
+
+char* findExternal(char* commandKey){
+	char* location = (char*) malloc(sizeof(char) * MAX_COMMAND_LEN);;
+	struct stat fileStat;
+	printf("commandKey: %s\n", commandKey);
+
+	for (int i = 0; i < pathLength; i++){
+		char testPath[200];
+		strcpy(testPath, path[i] + 1);
+		strcat(testPath, "/");
+		strcat(testPath, commandKey);
+
+		//testPath should be bin/ls
+		if(stat(testPath, &fileStat) < 0){
+
+			strcpy(location, "/");
+			strcat(location, testPath);
+			break;
+		}
+	}
+	return location;
+}
+
+int executeExternal(char* command){
+	char** argv = (char**) malloc(sizeof(char) * MAX_COMMAND_LEN);
+		
+	int numArgs = 0;
+	char* token = strtok(command, " ");
+	for (int i = 0; token != NULL; i++){
+		argv[i] = token;
+		token = strtok(NULL, " ");
+		numArgs++;
+	}
+
+	argv[numArgs-1][strlen(argv[numArgs-1])-1] = '\0';
+
+	char* location = findExternal(argv[0]);
+
+	if (location == NULL){
+		return 1;
+	}
+	
+	pid_t pid = fork();
+
+	if (pid < 0) {
+		return 2;
+	} else if (pid > 0) { // I am the parent
+		int status;
+		wait(&status);
+	} else { // I am the child
+		execve (location, argv, 0);
+  	}
+
+  	return 0;
 }
 
 //parseCommand takes in a command and passes it to the correct handler function.
@@ -62,7 +119,11 @@ int parseCommand(char *command){
    
    else if (strncmp (command, "path ", 5) == 0 || strncmp (command, "path\n", 5) == 0 ){
 		setPath(command+5);
-		printArray(path, pathLength);
+		return 0;
+   }
+
+   else{
+   		return executeExternal(command);
    }
 
 	return 1;
@@ -71,11 +132,9 @@ int parseCommand(char *command){
 
 
 int main(int argc, char** argv){
-	//whoosh is inherently a loop
-	
-	//How long should this be?
-	int const MAX_COMMAND_LEN = 128;
 	path = (char**) malloc(sizeof(char) * MAX_COMMAND_LEN);
+	path[0] = "/bin";
+	pathLength = 1;
 
 	while (running){
 		printf("whoosh> ");
@@ -85,8 +144,8 @@ int main(int argc, char** argv){
 
 		//do we need to do something if they enter a command that is too long?
 		int executionCode = parseCommand(currCommand);
-		if ( executionCode == 1){
-			printf("whoosh: command not found\n");
+		if ( executionCode != 0){
+			reportError();
 		}
 	}
 	exit(0);
