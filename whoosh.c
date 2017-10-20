@@ -40,18 +40,24 @@ void setPath(char* pathCommand){
 }
 
 char* findExternal(char* commandKey){
-	char* location = NULL;
+	char* location = (char*) malloc(sizeof(char) * MAX_COMMAND_LEN);;
 	struct stat fileStat;
+	printf("commandKey: %s\n", commandKey);
 
 	for (int i = 0; i < pathLength; i++){
-		char* testPath = path[i] + 1;
-		testPath = strcat(testPath, strcat("/", commandKey));
+		char testPath[200];
+		strcpy(testPath, path[i] + 1);
+		strcat(testPath, "/");
+		strcat(testPath, commandKey);
+
+		//testPath should be bin/ls
 		if(stat(testPath, &fileStat) < 0){
-			location = strcat("/", testPath);
+
+			strcpy(location, "/");
+			strcat(location, testPath);
 			break;
 		}
 	}
-
 	return location;
 }
 
@@ -70,7 +76,6 @@ int executeExternal(char* command){
 
 	char* location = findExternal(argv[0]);
 
-	printf("Location is %s.\n",location );
 	if (location == NULL){
 		return 1;
 	}
