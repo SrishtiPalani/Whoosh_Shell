@@ -9,6 +9,7 @@
 
 int running = 1;
 
+
 int const MAX_COMMAND_LEN = 128;
 
 char** path;
